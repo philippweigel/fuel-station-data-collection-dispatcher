@@ -1,11 +1,12 @@
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.*;
 import com.rabbitmq.client.Connection;
+import config.Database;
+import config.RabbitMQConfiguration;
+import model.Station;
+import model.StationCustomer;
 
-import java.sql.*;
 
-
-import javax.xml.crypto.Data;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.sql.PreparedStatement;
@@ -15,13 +16,15 @@ import java.util.concurrent.TimeoutException;
 
 public class Main {
 
-    private final static String QUEUE_NAME = "create-invoice";
+    private final static String CREATE_INVOICE_QUEUE_NAME = "create-invoice";
+    private final static String DATA_GATHERING_QUEUE_NAME = "create-data-gathering-job";
 
     public static void main(String[] args) {
 
 
         try {
-            Channel channel = setupRabbitMQChannel();
+            Channel channel = RabbitMQConfiguration.setupRabbitMQChannel();
+            channel.queueDeclare(CREATE_INVOICE_QUEUE_NAME, false, false, false, null);
             DeliverCallback deliverCallback = (consumerTag, delivery) -> {
                 String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
                 System.out.println(" [x] Received '" + message + "'");
@@ -30,23 +33,10 @@ public class Main {
                 fetchAndProcessStationData(customerID, channel);
 
             };
-            channel.basicConsume(QUEUE_NAME, true, deliverCallback, consumerTag -> { });
+            channel.basicConsume(CREATE_INVOICE_QUEUE_NAME, true, deliverCallback, consumerTag -> { });
         } catch (IOException | TimeoutException e) {
             e.printStackTrace();
         }
-
-    }
-
-    private static Channel setupRabbitMQChannel() throws IOException, TimeoutException {
-        ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost("localhost");
-        factory.setPort(30003);
-
-        Connection connection = factory.newConnection();
-        Channel channel = connection.createChannel();
-        channel.queueDeclare(QUEUE_NAME, false, false, false, null);
-
-        return channel;
 
     }
 
@@ -69,7 +59,7 @@ public class Main {
 
                 // Serialize jsonStationCustomer to JSON and send the JSON string to RabbitMQ.
                 String jsonStationCustomer  = objectMapper.writeValueAsString(stationCustomer);
-                channel.basicPublish("", QUEUE_NAME, null, jsonStationCustomer .getBytes(StandardCharsets.UTF_8));
+                channel.basicPublish("", DATA_GATHERING_QUEUE_NAME, null, jsonStationCustomer .getBytes(StandardCharsets.UTF_8));
                 System.out.println(" [x] Sent '" + jsonStationCustomer  + "'");
             }
         } catch (SQLException | IOException e) {

@@ -1,3 +1,5 @@
+package model;
+
 public class StationCustomer {
     private Station station;
     private int customerId;

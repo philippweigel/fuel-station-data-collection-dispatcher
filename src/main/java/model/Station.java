@@ -1,4 +1,5 @@
-import javax.print.DocFlavor;
+package model;
+
 
 public class Station {
 
@@ -48,7 +49,7 @@ public class Station {
 
     @Override
     public String toString() {
-        return "Station{" +
+        return "model.Station{" +
                 "id=" + id +
                 ", dbUrl='" + dbUrl + '\'' +
                 ", latitude=" + latitude +
