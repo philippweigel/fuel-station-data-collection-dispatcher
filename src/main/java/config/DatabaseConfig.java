@@ -4,7 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-public class Database {
+public class DatabaseConfig {
     private final static String DRIVER = "postgresql";
     private final static String HOST = "localhost";
     private final static int PORT = 30002;

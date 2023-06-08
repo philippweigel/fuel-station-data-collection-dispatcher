@@ -7,7 +7,7 @@ import com.rabbitmq.client.ConnectionFactory;
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 
-public class RabbitMQConfiguration {
+public class RabbitMQConfig {
 
     public static Channel setupRabbitMQChannel() throws IOException, TimeoutException {
         ConnectionFactory factory = new ConnectionFactory();
